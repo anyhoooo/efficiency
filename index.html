@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title></title>
+      <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style type="text/css">
+    .el-tree-node__content{
+        height: 50px;
+    }
+    .item{
+        width: 100px;
+        border: 1px dashed;
+        margin: 5px;
+        display: inline-block;
+        padding: 5px;
+        text-align: center;
+        cursor: pointer;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div>Tips:产能计算为一分钟产出多少个</div>
+        <el-row :gutter="20" style="padding-top: 20px;">
+            <el-col :span="8">
+                <span>查询:</span>
+                <el-select v-model="searchProduct" filterable placeholder="请选择" @change="searchChange">
+                    <el-option
+                        v-for="item in list"
+                        :key="item[0]"
+                        :label="item[0]"
+                        :value="item[0]">
+                    </el-option>
+                </el-select>
+            </el-col>
+            <el-col :span="12">
+                <el-card class="box-card">
+                <el-row :gutter="20">
+                    <el-col :span="4">产能：</el-col>
+                    <el-col :span="20">{{currentProduct.capacity * currentProduct.output}}个/min</el-col>
+                </el-row>
+                <el-row :gutter="20">
+                    <el-col :span="4">被用于：</el-col>
+                    <el-col :span="20"><div v-for="i in currentProduct.used">{{i.name}}(x{{i.count}}) </div></el-col>
+                </el-row>
+                </el-card>
+            </el-col>
+        </el-row>
+        <div style="padding: 20px 0;">当前选中产品生产线</div>
+        <el-row :gutter="20">
+            <el-col :span="8">
+                <span>最终产物集合:</span>
+                <el-select v-model="selectProduct" multiple filterable placeholder="请选择" @change="selectChange">
+                    <el-option
+                    v-for="item in productList"
+                    :key="item"
+                    :label="item"
+                    :value="item">
+                    </el-option>
+                </el-select>
+            </el-col>
+            <el-col :span="12">
+                <span>推荐建筑比例</span>
+                <div >
+                    <div v-for="(level,index) in hierarchy">
+                        <el-row :gutter="20">
+                            <el-col :span="4">
+                                <div style="line-height: 40px;">第{{index+1}}层级：</div>
+                            </el-col>
+                            <el-col :span="20">
+                                <span v-for="item in level" @click="clickItem(item.name)" class="item">{{item.name}}:{{item.count}}</span>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </div>
+              
+            </el-col>
+        </el-row>
+        <div style="padding: 20px 0;">生产线详细内容</div>
+        <el-tabs type="card" @tab-click="handleClick">
+            <el-tab-pane v-for="tab in selectProduct" :label="tab"></el-tab-pane>
+        </el-tabs>
+        <el-tree :data="productLine" :props="defaultProps" :default-expand-all="true" :expand-on-click-node="false">
+      <span  style="display: inline-block;" slot-scope="{ node, data }">
+       
+        <span>{{ data.name }}</span>
+
+        <span v-if="!data.isOriginal">
+            (消耗：<span v-for="item in data.children">
+                {{item.name}} * {{data.capacity * item.ratio * data.count}}
+            </span>)
+            
+        </span>
+  
+            <span v-if="data.isOriginal">比例：{{data.ratio}} 建筑个数：<el-input-number v-model="data.count" @change="()=>countChange(data)"></el-input-number></span>
+            <span v-else>建筑个数：<el-input-number v-model="data.count" @change="()=>countChange(data)"></el-input-number></span>
+            
+   
+         
+        <span>
+        输出：{{data.capacity * data.output * data.count}}个
+        剩余：{{data.capacity * data.output * data.count-data.consume}}
+        </span>
+      </span>
+
+        </el-tree>
+        
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="./index.min.js"></script>
+</body>
+
+</html>
